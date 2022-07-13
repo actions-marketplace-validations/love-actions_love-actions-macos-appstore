@@ -1,5 +1,5 @@
-name: Love actions for macOS App Store
-description: macOS App Store CI/CD for LÖVE based games
+name: Love actions for macOS AppStore
+description: macOS AppStore CI/CD for LÖVE based games
 branding:
   icon: "heart"
   color: "yellow"
