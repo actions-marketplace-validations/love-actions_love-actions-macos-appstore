@@ -196,6 +196,8 @@ runs:
         const exportPlistPath = './love-actions-macos-appstore/love/platform/xcode/macosx/macos-copy-app.plist';
         const exportPlist = plist['parse'](fs.readFileSync(exportPlistPath, 'utf8'));
         exportPlist['method'] = 'app-store';
+        exportPlist['signingCertificate'] = 'Apple Distribution';
+        exportPlist['installerSigningCertificate'] = '3rd Party Mac Developer Installer';
         exportPlist['teamID'] = '${{ inputs.team-id }}';
         fs.writeFileSync(exportPlistPath, plist['build'](exportPlist));
 
