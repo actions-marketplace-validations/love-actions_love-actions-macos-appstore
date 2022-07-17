@@ -232,23 +232,8 @@ runs:
         -archivePath ${{ env.ARCHIVE_PATH }} \
         -exportPath ./love-actions-macos-appstore/ \
         -exportOptionsPlist ./love-actions-macos-appstore/love/platform/xcode/macosx/macos-copy-app.plist
-    - name: Notarize application bundle
-      uses: 26F-Studio/xcode-notarizer@v1.0.1
-      with:
-        product-path: ./love-actions-macos-appstore/${{ inputs.product-name }}.app
-        apple-id: ${{ inputs.account-username }}
-        app-password: ${{ inputs.account-password }}
-        team-id: ${{ inputs.team-id }}
-    - name: Create pkg file
-      env:
-        KEYCHAIN_PATH: ./love-actions-macos-appstore/build.keychain
-        KEYCHAIN_PASSWORD: build_keychain_password
-      shell: bash
-      run: |
-        security unlock-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
-        identity=$(security find-identity -v | grep -o 'Apple Distribution[^"]*')
-        productbuild --component ./love-actions-macos-appstore/${{ inputs.product-name }}.app /Applications ./love-actions-macos-appstore/${{ inputs.product-name }}_unsigned.pkg
-        productsign --sign "$identity" ./love-actions-macos-appstore/${{ inputs.product-name }}_unsigned.pkg ./love-actions-macos-appstore/${{ inputs.product-name }}.pkg
+        
+        ls -l ./love-actions-macos-appstore/
     - name: Notarize installer pkg
       uses: 26F-Studio/xcode-notarizer@v1.0.1
       with:
@@ -257,7 +242,6 @@ runs:
         app-password: ${{ inputs.account-password }}
         team-id: ${{ inputs.team-id }}
     - name: Move installer pkg
-      if: "${{ inputs.developer-id-installer-base64 != '' && inputs.developer-id-installer-password != '' }}"
       shell: bash
       run: |
         mv ./love-actions-macos-appstore/${{ inputs.product-name }}.pkg ${{ inputs.output-folder }}/${{ inputs.product-name }}.pkg
