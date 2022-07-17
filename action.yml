@@ -142,7 +142,7 @@ runs:
         const plist = require('plist');
         const xcode = require('xcode');
 
-        const configuration = 'Distribution'
+        const configuration = 'Release'
 
         const liblovePbxprojPath = './love-actions-macos-appstore/love/platform/xcode/liblove.xcodeproj/project.pbxproj';
         const libloveProject = xcode.project(liblovePbxprojPath).parseSync();
@@ -205,7 +205,7 @@ runs:
         xcodebuild clean archive -quiet \
         -project ./love-actions-macos-appstore/love/platform/xcode/love.xcodeproj \
         -scheme love-macosx \
-        -configuration Distribution \
+        -configuration Release \
         -archivePath ${{ env.ARCHIVE_PATH }} \
         OTHER_CFLAGS="-Wno-unused-parameter -Wno-sign-compare -Wno-conditional-uninitialized -Wno-strict-prototypes"
 
