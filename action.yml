@@ -232,20 +232,10 @@ runs:
         -archivePath ${{ env.ARCHIVE_PATH }} \
         -exportPath ./love-actions-macos-appstore/ \
         -exportOptionsPlist ./love-actions-macos-appstore/love/platform/xcode/macosx/macos-copy-app.plist
-        
-        ls -l ./love-actions-macos-appstore/
-        mv "./love-actions-macos-appstore/${{ inputs.app-name }}.pkg" "./love-actions-macos-appstore/${{ inputs.product-name }}.pkg"
-    - name: Notarize installer pkg
-      uses: 26F-Studio/xcode-notarizer@v1.0.1
-      with:
-        product-path: ./love-actions-macos-appstore/${{ inputs.product-name }}.pkg
-        apple-id: ${{ inputs.account-username }}
-        app-password: ${{ inputs.account-password }}
-        team-id: ${{ inputs.team-id }}
     - name: Move installer pkg
       shell: bash
       run: |
-        mv ./love-actions-macos-appstore/${{ inputs.product-name }}.pkg ${{ inputs.output-folder }}/${{ inputs.product-name }}.pkg
+        mv "./love-actions-macos-appstore/${{ inputs.app-name }}.pkg" "${{ inputs.output-folder }}/${{ inputs.product-name }}.pkg"
     - name: Gather packages in output folder
       id: gather-packages
       shell: bash
