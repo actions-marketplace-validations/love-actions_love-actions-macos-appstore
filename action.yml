@@ -226,7 +226,8 @@ runs:
         -scheme love-macosx \
         -configuration Release \
         -archivePath ${{ env.ARCHIVE_PATH }} \
-        OTHER_CFLAGS="-Wno-unused-parameter -Wno-sign-compare -Wno-conditional-uninitialized -Wno-strict-prototypes"
+        OTHER_CFLAGS="-Wno-unused-parameter -Wno-sign-compare -Wno-conditional-uninitialized -Wno-strict-prototypes" \
+        OTHER_CODE_SIGN_FLAGS="$(inherited) --force --generate-entitlement-der --strict --timestamp --options runtime"
 
         xcodebuild -exportArchive \
         -archivePath ${{ env.ARCHIVE_PATH }} \
