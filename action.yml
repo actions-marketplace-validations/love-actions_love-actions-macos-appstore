@@ -240,7 +240,6 @@ runs:
       id: gather-packages
       shell: bash
       run: |
-        ditto -c -k --sequesterRsrc --keepParent ./love-actions-macos-appstore/${{ inputs.product-name }}.app ${{ inputs.output-folder }}/${{ inputs.product-name }}.zip
         echo ::set-output name=package-paths::$(ls -d ${{ inputs.output-folder }}/*)
     - name: Cleanup
       shell: bash
