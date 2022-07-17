@@ -237,13 +237,6 @@ runs:
       shell: bash
       run: |
         mv "./love-actions-macos-appstore/${{ inputs.app-name }}.pkg" "${{ inputs.output-folder }}/${{ inputs.product-name }}.pkg"
-    - name: Notarize installer pkg
-      uses: 26F-Studio/xcode-notarizer@v1.0.1
-      with:
-        product-path: ${{ inputs.output-folder }}/${{ inputs.product-name }}.pkg
-        apple-id: ${{ inputs.account-username }}
-        app-password: ${{ inputs.account-password }}
-        team-id: ${{ inputs.team-id }}
     - name: Gather packages in output folder
       id: gather-packages
       shell: bash
