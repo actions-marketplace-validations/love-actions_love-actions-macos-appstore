@@ -78,6 +78,16 @@ inputs:
       Developer team id
       Would be used to sign the app
     required: true
+  mac-installer-base64:
+    description: |
+      Mac Installer Distribution certificate base64 content
+      Would be used to sign the app
+    required: true
+  mac-installer-password:
+    description: |
+      Mac Installer Distribution certificate password
+      Would be used to sign the app
+    required: true
 outputs:
   package-paths:
     description: |
@@ -118,20 +128,28 @@ runs:
         rm -rf ./love-actions-macos-appstore/love/platform/xcode/Images.xcassets/OS\ X\ AppIcon.appiconset/*.png
         iconutil -c iconset -o ./love-actions-macos-appstore/icon.iconset ${{ inputs.icon-path }}
         mv -f ./love-actions-macos-appstore/icon.iconset/* ./love-actions-macos-appstore/love/platform/xcode/Images.xcassets/OS\ X\ AppIcon.appiconset/
-    - name: Create keychain and import Apple Distribution certificate
+    - name: Create keychain and import certificates
       env:
-        CERTIFICATE_PATH: ./love-actions-macos-appstore/cert_dist.p12
+        CERTIFICATE_PATH: ./love-actions-macos-appstore/cert.p12
         KEYCHAIN_PATH: ./love-actions-macos-appstore/build.keychain
         KEYCHAIN_PASSWORD: build_keychain_password
       shell: bash
       run: |
-        echo -n "${{ inputs.apple-distribution-base64 }}" | base64 --decode --output $CERTIFICATE_PATH
         security create-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
         security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
         security default-keychain -s $KEYCHAIN_PATH
         security unlock-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
+        
+        echo -n "${{ inputs.apple-distribution-base64 }}" | base64 --decode --output $CERTIFICATE_PATH
         security import $CERTIFICATE_PATH -A -f pkcs12 -k $KEYCHAIN_PATH -P "${{ inputs.apple-distribution-password }}" -t cert
+        rm $CERTIFICATE_PATH
+        
+        echo -n "${{ inputs.mac-installer-base64 }}" | base64 --decode --output $CERTIFICATE_PATH
+        security import $CERTIFICATE_PATH -A -f pkcs12 -k $KEYCHAIN_PATH -P "${{ inputs.mac-installer-password }}" -t cert
+        rm $CERTIFICATE_PATH
+        
         security set-key-partition-list -S apple-tool:,apple:,codesign:,productbuild:,productsign: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
+        
     - name: Modify XCode project
       shell: bash
       run: |
@@ -178,7 +196,6 @@ runs:
         const exportPlistPath = './love-actions-macos-appstore/love/platform/xcode/macosx/macos-copy-app.plist';
         const exportPlist = plist['parse'](fs.readFileSync(exportPlistPath, 'utf8'));
         exportPlist['method'] = 'app-store';
-        exportPlist['signingCertificate'] = 'Apple Distribution';
         exportPlist['teamID'] = '${{ inputs.team-id }}';
         fs.writeFileSync(exportPlistPath, plist['build'](exportPlist));
 
