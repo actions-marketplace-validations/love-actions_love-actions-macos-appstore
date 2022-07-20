@@ -184,15 +184,20 @@ runs:
         );
         fs.writeFileSync(lovePbxprojPath, loveProject.writeSync());
 
-        const plistPath = './love-actions-macos-appstore/love/platform/xcode/macosx/love-macosx.plist';
-        const parsed = plist['parse'](fs.readFileSync(plistPath, 'utf8'));
-        parsed['CFBundleExecutable'] = '${{ inputs.product-name }}';
-        parsed['CFBundleName'] = '${{ inputs.app-name }}';
-        parsed['CFBundleVersion'] = '${{ inputs.version-string }}';
-        parsed['NSHumanReadableCopyright'] = '${{ inputs.copyright }}';
-        delete parsed['CFBundleDocumentTypes'];
-        delete parsed['UTExportedTypeDeclarations'];
-        fs.writeFileSync(plistPath, plist['build'](parsed));
+        const infoPath = './love-actions-macos-appstore/love/platform/xcode/macosx/love-macosx.plist';
+        const infoPlist = plist['parse'](fs.readFileSync(infoPath, 'utf8'));
+        infoPlist['CFBundleExecutable'] = '${{ inputs.product-name }}';
+        infoPlist['CFBundleName'] = '${{ inputs.app-name }}';
+        infoPlist['CFBundleVersion'] = '${{ inputs.version-string }}';
+        infoPlist['NSHumanReadableCopyright'] = '${{ inputs.copyright }}';
+        delete infoPlist['CFBundleDocumentTypes'];
+        delete infoPlist['UTExportedTypeDeclarations'];
+        fs.writeFileSync(infoPath, plist['build'](infoPlist));
+
+        const entitlementsPath = './love-actions-macos-appstore/love/platform/xcode/love.entitlements';
+        const entitlementsPlist = plist['parse'](fs.readFileSync(entitlementsPath, 'utf8'));
+        entitlementsPlist['com.apple.security.app-sandbox'] = true;
+        fs.writeFileSync(entitlementsPath, plist['build'](entitlementsPlist));
 
         const exportPlistPath = './love-actions-macos-appstore/love/platform/xcode/macosx/macos-copy-app.plist';
         const exportPlist = plist['parse'](fs.readFileSync(exportPlistPath, 'utf8'));
@@ -228,7 +233,7 @@ runs:
         -configuration Release \
         -archivePath ${{ env.ARCHIVE_PATH }} \
         OTHER_CFLAGS="-Wno-everything" \
-        OTHER_CODE_SIGN_FLAGS="--generate-entitlement-der --strict --timestamp --options runtime"
+        OTHER_CODE_SIGN_FLAGS="--deep --force --generate-entitlement-der --strict --timestamp --options runtime"
 
         xcodebuild -exportArchive \
         -archivePath ${{ env.ARCHIVE_PATH }} \
