@@ -42,11 +42,14 @@ See related actions below:
     product-name: "my_game"
     version-string: "2.3.4"
     output-folder: "./dist"
-    account-username: ${{ secrets.APPLE_ACCOUNT_USERNAME }}
-    account-password: ${{ secrets.APPLE_ACCOUNT_PASSWORD }}
     apple-distribution-base64: ${{ secrets.APPLE_CERT_APPLE_DISTRIBUTION }}
     apple-distribution-password: ${{ secrets.APPLE_CERT_APPLE_DISTRIBUTION_PWD }}
+    mac-installer-base64: ${{ secrets.APPLE_CERT_MAC_INSTALLER }}
+    mac-installer-password: ${{ secrets.APPLE_CERT_MAC_INSTALLER_PWD }}
+    account-username: ${{ secrets.APPLE_ACCOUNT_USERNAME }}
+    account-password: ${{ secrets.APPLE_ACCOUNT_PASSWORD }}
     team-id: "${{ secrets.APPLE_DEVELOPER_TEAM_ID }}"
+    apple-id: "${{ secrets.APPLE_APPLE_ID }}"
 ```
 
 ## All inputs
@@ -61,11 +64,14 @@ See related actions below:
 | `product-name`                | `false`  | `"love_app"`         | Base name of the package. Used to rename products                                                  |
 | `version-string`              | `false`  | `"11.4"`             | App version string no more than 3 numbers. Used in `platform/xcode/love.xcodeproj/project.pbxproj` |
 | `output-folder`               | `false`  | `"./build"`          | Built packages output folder                                                                       |
-| `account-username`            | `true`   | `""`                 | Apple ID username. Used to sign the app                                                            |
-| `account-password`            | `true`   | `""`                 | App specified password. Used to sign the app                                                       |
 | `apple-distribution-base64`   | `true`   | `""`                 | Apple Distribution certificate base64 content. Used to sign the app                                |
 | `apple-distribution-password` | `true`   | `""`                 | Apple Distribution certificate password. Used to sign the app                                      |
-| `team-id`                     | `true`   | `""`                 | Developer team id. Used to sign the app                                                            |
+| `mac-installer-base64`        | `true`   | `""`                 | Mac Installer Distribution certificate base64 content. Used to sign the package                    |
+| `mac-installer-password`      | `true`   | `""`                 | Mac Installer Distribution certificate password. Used to sign the package                          |
+| `account-username`            | `true`   | `""`                 | Apple ID username. Used to validate and upload the package                                         |
+| `account-password`            | `true`   | `""`                 | App specified password. Used to validate and upload the package                                    |
+| `team-id`                     | `true`   | `""`                 | Developer team id. Used to upload the package                                                      |
+| `team-id`                     | `true`   | `""`                 | App Apple ID. Used to upload the package                                                           |
 
 ## All outputs
 

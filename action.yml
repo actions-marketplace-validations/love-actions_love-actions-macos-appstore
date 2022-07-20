@@ -53,16 +53,6 @@ inputs:
       All packages would be placed here
     required: false
     default: "./build"
-  account-username:
-    description: |
-      Account username
-      Would be used to sign the app
-    required: true
-  account-password:
-    description: |
-      Account password
-      Would be used to sign the app
-    required: true
   apple-distribution-base64:
     description: |
       Apple Distribution certificate base64 content
@@ -71,11 +61,6 @@ inputs:
   apple-distribution-password:
     description: |
       Apple Distribution certificate password
-      Would be used to sign the app
-    required: true
-  team-id:
-    description: |
-      Developer team id
       Would be used to sign the app
     required: true
   mac-installer-base64:
@@ -87,6 +72,26 @@ inputs:
     description: |
       Mac Installer Distribution certificate password
       Would be used to sign the app
+    required: true
+  account-username:
+    description: |
+      Account username
+      Would be used to validate and upload the package
+    required: true
+  account-password:
+    description: |
+      Account password
+      Would be used to validate and upload the package
+    required: true
+  team-id:
+    description: |
+      Developer team id
+      Would be used to upload the package
+    required: true
+  apple-id:
+    description: |
+      App Apple ID
+      Would be used to upload the package
     required: true
 outputs:
   package-paths:
@@ -251,6 +256,14 @@ runs:
         xcrun altool --validate-app -t macos \
         -u "${{ inputs.account-username }}" -p "${{ inputs.account-password }}" \
         -f "./love-actions-macos-appstore/${{ inputs.app-name }}.pkg"
+    - name: Upload package
+      shell: bash
+      run: |
+        xcrun altool --upload-package "./love-actions-macos-appstore/${{ inputs.app-name }}.pkg" \
+        -t macos --apple-id ${{ inputs.apple-id }} \
+        -u "${{ inputs.account-username }}" -p "${{ inputs.account-password }}" --team-id "${{ inputs.team-id }}" \ 
+        --bundle-version "${{ inputs.version-string }}" --bundle-short-version-string "${{ inputs.version-string }}" \
+        --bundle-id "${{ inputs.bundle-id }}" --verbose
     - name: Move installer pkg
       shell: bash
       run: |
