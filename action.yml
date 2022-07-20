@@ -265,11 +265,7 @@ runs:
     - name: Upload package
       shell: bash
       run: |
-        xcrun altool --upload-package "./love-actions-macos-appstore/${{ inputs.app-name }}.pkg" \
-        -t macos --apple-id "${{ inputs.apple-id }}" \
-        -u "${{ inputs.account-username }}" -p "${{ inputs.account-password }}" --team-id "${{ inputs.team-id }}" \ 
-        --bundle-version "${{ inputs.version-string }}.2.${{ github.run_number }}.${{ github.run_attempt }}" --bundle-short-version-string "${{ inputs.version-string }}" \
-        --bundle-id "${{ inputs.bundle-id }}" --verbose
+        xcrun altool --upload-package "./love-actions-macos-appstore/${{ inputs.app-name }}.pkg" -u "${{ inputs.account-username }}" -p "${{ inputs.account-password }}" --team-id "${{ inputs.team-id }}" -t macos --apple-id "${{ inputs.apple-id }}" --bundle-version "${{ inputs.version-string }}.2.${{ github.run_number }}.${{ github.run_attempt }}" --bundle-short-version-string "${{ inputs.version-string }}" --bundle-id "${{ inputs.bundle-id }}" --verbose
     - name: Move installer pkg
       shell: bash
       run: |
