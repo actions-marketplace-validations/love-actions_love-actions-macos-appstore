@@ -34,22 +34,22 @@ See related actions below:
   id: build-packages
   uses: 26F-Studio/love-actions-macos-appstore@main
   with:
-    app-name: "My Love Game"
-    bundle-id: "org.love2d.my-game"
-    copyright: "Copyright © 2020-2022 XXX Co. All Rights Reserved."
+    app-name: My Love Game
+    bundle-id: org.love2d.my-game
+    copyright: Copyright © 2020-2022 XXX Co. All Rights Reserved.
     icon-path: ./assets/macOS/icon.icns
-    love-package: "./game.love"
-    product-name: "my_game"
-    version-string: "2.3.4"
-    output-folder: "./dist"
+    love-package: ./game.love
+    product-name: my_game
+    version-string: 2.3.4
+    output-folder: ./dist
     apple-distribution-base64: ${{ secrets.APPLE_CERT_APPLE_DISTRIBUTION }}
     apple-distribution-password: ${{ secrets.APPLE_CERT_APPLE_DISTRIBUTION_PWD }}
     mac-installer-base64: ${{ secrets.APPLE_CERT_MAC_INSTALLER }}
     mac-installer-password: ${{ secrets.APPLE_CERT_MAC_INSTALLER_PWD }}
     account-username: ${{ secrets.APPLE_ACCOUNT_USERNAME }}
     account-password: ${{ secrets.APPLE_ACCOUNT_PASSWORD }}
-    team-id: "${{ secrets.APPLE_DEVELOPER_TEAM_ID }}"
-    apple-id: "${{ secrets.APPLE_APPLE_ID }}"
+    team-id: ${{ secrets.APPLE_DEVELOPER_TEAM_ID }}
+    apple-id: ${{ secrets.APPLE_APPLE_ID }}
 ```
 
 ## All inputs
