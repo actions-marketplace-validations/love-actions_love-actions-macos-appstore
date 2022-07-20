@@ -73,6 +73,11 @@ inputs:
       Mac Installer Distribution certificate password
       Would be used to sign the app
     required: true
+  provision-profile-base64:
+    description: |
+      App Store type of macos Provisioning Profile's base64 content
+      Would be used to sign the app
+    required: true
   account-username:
     description: |
       Account username
@@ -133,7 +138,7 @@ runs:
         rm -rf ./love-actions-macos-appstore/love/platform/xcode/Images.xcassets/OS\ X\ AppIcon.appiconset/*.png
         iconutil -c iconset -o ./love-actions-macos-appstore/icon.iconset ${{ inputs.icon-path }}
         mv -f ./love-actions-macos-appstore/icon.iconset/* ./love-actions-macos-appstore/love/platform/xcode/Images.xcassets/OS\ X\ AppIcon.appiconset/
-    - name: Create keychain and import certificates
+    - name: Create keychain and import certificates, provision profiles
       env:
         CERTIFICATE_PATH: ./love-actions-macos-appstore/cert.p12
         KEYCHAIN_PATH: ./love-actions-macos-appstore/build.keychain
@@ -155,6 +160,8 @@ runs:
         
         security set-key-partition-list -S apple-tool:,apple:,codesign:,productbuild:,productsign: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
         
+        mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+        echo -n "${{ inputs.provision-profile-base64 }}" | base64 --decode --output ~/Library/MobileDevice/Provisioning\ Profiles/macos_appstore.provisionprofile
     - name: Modify XCode project
       shell: bash
       run: |
