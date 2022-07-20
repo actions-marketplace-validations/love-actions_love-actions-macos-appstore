@@ -119,6 +119,7 @@ runs:
       shell: bash
       run: |
         mv ./love-actions-macos-appstore/love-apple-dependencies/macOS/Frameworks/ ./love-actions-macos-appstore/love/platform/xcode/macosx
+        mv ./love-actions-macos-appstore/love-apple-dependencies/iOS/libraries/ ./love-actions-macos-appstore/love/platform/xcode/ios
         mv ${{ inputs.love-package }} ./love-actions-macos-appstore/love/platform/xcode/game.love
         mkdir -p ./love-actions-macos-appstore/love/platform/xcode/build/Debug
         mkdir -p ./love-actions-macos-appstore/love/platform/xcode/build/Release
