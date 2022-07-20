@@ -188,6 +188,7 @@ runs:
         const parsed = plist['parse'](fs.readFileSync(plistPath, 'utf8'));
         parsed['CFBundleExecutable'] = '${{ inputs.product-name }}';
         parsed['CFBundleName'] = '${{ inputs.app-name }}';
+        parsed['CFBundleVersion'] = '${{ inputs.version-string }}';
         parsed['NSHumanReadableCopyright'] = '${{ inputs.copyright }}';
         delete parsed['CFBundleDocumentTypes'];
         delete parsed['UTExportedTypeDeclarations'];
@@ -226,13 +227,19 @@ runs:
         -scheme love-macosx \
         -configuration Release \
         -archivePath ${{ env.ARCHIVE_PATH }} \
-        OTHER_CFLAGS="-Wno-unused-parameter -Wno-sign-compare -Wno-conditional-uninitialized -Wno-strict-prototypes" \
-        OTHER_CODE_SIGN_FLAGS="$(inherited) --force --generate-entitlement-der --strict --timestamp --options runtime"
+        OTHER_CFLAGS="-Wno-everything" \
+        OTHER_CODE_SIGN_FLAGS="--generate-entitlement-der --strict --timestamp --options runtime"
 
         xcodebuild -exportArchive \
         -archivePath ${{ env.ARCHIVE_PATH }} \
         -exportPath ./love-actions-macos-appstore/ \
         -exportOptionsPlist ./love-actions-macos-appstore/love/platform/xcode/macosx/macos-copy-app.plist
+    - name: Validate installer pkg
+      shell: bash
+      run: |
+        xcrun altool --validate-app -t macos \
+        -u "${{ inputs.account-username }}" -p "${{ inputs.account-password }}" \
+        -f "./love-actions-macos-appstore/${{ inputs.app-name }}.pkg"
     - name: Move installer pkg
       shell: bash
       run: |
