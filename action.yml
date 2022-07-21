@@ -202,7 +202,7 @@ runs:
         const infoPlist = plist['parse'](fs.readFileSync(infoPath, 'utf8'));
         infoPlist['CFBundleExecutable'] = '${{ inputs.product-name }}';
         infoPlist['CFBundleName'] = '${{ inputs.app-name }}';
-        infoPlist['CFBundleVersion'] = '${{ steps.setup-env.outputs.bundle-version }}';
+        // infoPlist['CFBundleVersion'] = '${{ steps.setup-env.outputs.bundle-version }}';
         infoPlist['NSHumanReadableCopyright'] = '${{ inputs.copyright }}';
         delete infoPlist['CFBundleDocumentTypes'];
         delete infoPlist['UTExportedTypeDeclarations'];
