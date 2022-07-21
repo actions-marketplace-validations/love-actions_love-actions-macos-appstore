@@ -182,6 +182,11 @@ runs:
         const plist = require('plist');
         const xcode = require('xcode');
 
+        const provisioningProfile = fs.readFileSync('~/Library/MobileDevice/Provisioning Profiles/macos_appstore.provisionprofile', 'utf8');
+        const uuid = provisioningProfile.substr(provisioningProfile.indexOf('>', provisioningProfile.indexOf('UUID') + 10) + 1, 36);
+
+        console.log(uuid);
+
         const configuration = 'Release'
 
         const liblovePbxprojPath = './love-actions-macos-appstore/love/platform/xcode/liblove.xcodeproj/project.pbxproj';
@@ -232,6 +237,7 @@ runs:
         exportPlist['signingCertificate'] = 'Apple Distribution';
         exportPlist['installerSigningCertificate'] = '3rd Party Mac Developer Installer';
         exportPlist['teamID'] = '${{ inputs.team-id }}';
+        exportPlist['provisioningProfiles'] = {'${{ inputs.bundle-id }}': uuid};
         fs.writeFileSync(exportPlistPath, plist['build'](exportPlist));
 
         const iconPath = './love-actions-macos-appstore/love/platform/xcode/Images.xcassets/OS X AppIcon.appiconset/Contents.json';
@@ -266,6 +272,8 @@ runs:
         -archivePath ${{ env.ARCHIVE_PATH }} \
         -exportPath ./love-actions-macos-appstore/ \
         -exportOptionsPlist ./love-actions-macos-appstore/love/platform/xcode/macosx/macos-copy-app.plist
+
+        ls -l ./love-actions-macos-appstore/
     - name: Validate installer pkg
       shell: bash
       run: |
