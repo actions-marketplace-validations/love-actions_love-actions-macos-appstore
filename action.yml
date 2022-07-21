@@ -172,6 +172,7 @@ runs:
         
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         echo -n "${{ inputs.provision-profile-base64 }}" | base64 --decode --output ~/Library/MobileDevice/Provisioning\ Profiles/macos_appstore.provisionprofile
+        ls -l ~/Library/MobileDevice/Provisioning\ Profiles/
     - name: Modify XCode project
       shell: bash
       run: |
