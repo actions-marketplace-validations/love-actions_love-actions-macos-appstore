@@ -53,45 +53,20 @@ inputs:
       All packages would be placed here
     required: false
     default: "./build"
-  apple-distribution-base64:
+  api-key-base64:
     description: |
-      Apple Distribution certificate base64 content
-      Would be used to sign the app
+      App Store Connect API key base64 content
+      Would be used to automaticly update profiles, app IDs and certificates
     required: true
-  apple-distribution-password:
+  api-key-id:
     description: |
-      Apple Distribution certificate password
-      Would be used to sign the app
+      App Store Connect API key ID
+      Would be used to automaticly update profiles, app IDs and certificates
     required: true
-  mac-installer-base64:
+  api-issuer-id:
     description: |
-      Mac Installer Distribution certificate base64 content
-      Would be used to sign the app
-    required: true
-  mac-installer-password:
-    description: |
-      Mac Installer Distribution certificate password
-      Would be used to sign the app
-    required: true
-  provision-profile-base64:
-    description: |
-      App Store type of macos Provisioning Profile's base64 content
-      Would be used to sign the app
-    required: true
-  account-username:
-    description: |
-      Account username
-      Would be used to validate and upload the package
-    required: true
-  account-password:
-    description: |
-      Account password
-      Would be used to validate and upload the package
-    required: true
-  team-id:
-    description: |
-      Developer team id
-      Would be used to upload the package
+      App Store Connect API issuer ID
+      Would be used to automaticly update profiles, app IDs and certificates
     required: true
   apple-id:
     description: |
@@ -148,32 +123,14 @@ runs:
         rm -rf ./love-actions-macos-appstore/love/platform/xcode/Images.xcassets/OS\ X\ AppIcon.appiconset/*.png
         iconutil -c iconset -o ./love-actions-macos-appstore/icon.iconset ${{ inputs.icon-path }}
         mv -f ./love-actions-macos-appstore/icon.iconset/* ./love-actions-macos-appstore/love/platform/xcode/Images.xcassets/OS\ X\ AppIcon.appiconset/
-    - name: Create keychain and import certificates, provision profiles
+    - name: Create API key and copy to private keys
       env:
-        CERTIFICATE_PATH: ./love-actions-macos-appstore/cert.p12
-        KEYCHAIN_PATH: ./love-actions-macos-appstore/build.keychain
-        KEYCHAIN_PASSWORD: build_keychain_password
-        PROVISION_PROFILE_PATH: ./love-actions-macos-appstore/macos_appstore.provisionprofile
+        API_KEY_PATH: ./love-actions-macos-appstore/AuthKey_${{ inputs.api-key-id }}.p8
       shell: bash
       run: |
-        security create-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
-        security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-        security default-keychain -s $KEYCHAIN_PATH
-        security unlock-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
-        
-        echo -n "${{ inputs.apple-distribution-base64 }}" | base64 --decode --output $CERTIFICATE_PATH
-        security import $CERTIFICATE_PATH -A -f pkcs12 -k $KEYCHAIN_PATH -P "${{ inputs.apple-distribution-password }}" -t cert
-        rm $CERTIFICATE_PATH
-        
-        echo -n "${{ inputs.mac-installer-base64 }}" | base64 --decode --output $CERTIFICATE_PATH
-        security import $CERTIFICATE_PATH -A -f pkcs12 -k $KEYCHAIN_PATH -P "${{ inputs.mac-installer-password }}" -t cert
-        rm $CERTIFICATE_PATH
-        
-        security set-key-partition-list -S apple-tool:,apple:,codesign:,productbuild:,productsign: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
-        
-        echo -n "${{ inputs.APPLE_PP_DEVELOPER_ID_APPLICATION }}" | base64 --decode --output $PROVISION_PROFILE_PATH
-        mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-        cp $PROVISION_PROFILE_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+        echo -n "${{ inputs.api-key-base64 }}" | base64 --decode --output $API_KEY_PATH
+        mkdir -p ~/private_keys/
+        cp $API_KEY_PATH ~/private_keys/
     - name: Modify XCode project
       shell: bash
       run: |
@@ -183,11 +140,6 @@ runs:
         const fs = require('fs');
         const plist = require('plist');
         const xcode = require('xcode');
-
-        const provisioningProfile = fs.readFileSync('./love-actions-macos-appstore/macos_appstore.provisionprofile', 'utf8');
-        const uuid = provisioningProfile.substr(provisioningProfile.indexOf('>', provisioningProfile.indexOf('UUID') + 10) + 1, 36);
-
-        console.log(uuid);
 
         const configuration = 'Release'
 
@@ -200,7 +152,8 @@ runs:
         const lovePbxprojPath = './love-actions-macos-appstore/love/platform/xcode/love.xcodeproj/project.pbxproj';
         const loveProject = xcode.project(lovePbxprojPath).parseSync();
         const loveTarget = 'love-macosx'
-        loveProject.updateBuildProperty('CODE_SIGN_IDENTITY', '"Apple Distribution"', configuration, loveTarget);
+        loveProject.updateBuildProperty('CODE_SIGN_IDENTITY', 'Development', configuration, loveTarget);
+        loveProject.updateBuildProperty('CODE_SIGN_STYLE', 'Automatic', configuration, loveTarget);
         loveProject.updateBuildProperty('DEVELOPMENT_TEAM', '${{ inputs.team-id }}', configuration, loveTarget);
         loveProject.updateBuildProperty('MACOSX_DEPLOYMENT_TARGET', '10.9', configuration, loveTarget);
         loveProject.updateBuildProperty('MARKETING_VERSION', '${{ inputs.version-string }}', configuration, loveTarget);
@@ -236,10 +189,9 @@ runs:
         const exportPlistPath = './love-actions-macos-appstore/love/platform/xcode/macosx/macos-copy-app.plist';
         const exportPlist = plist['parse'](fs.readFileSync(exportPlistPath, 'utf8'));
         exportPlist['method'] = 'app-store';
-        exportPlist['signingCertificate'] = 'Apple Distribution';
-        exportPlist['installerSigningCertificate'] = '3rd Party Mac Developer Installer';
-        exportPlist['teamID'] = '${{ inputs.team-id }}';
-        exportPlist['provisioningProfiles'] = {'${{ inputs.bundle-id }}': uuid};
+        // exportPlist['signingCertificate'] = 'Apple Distribution';
+        // exportPlist['installerSigningCertificate'] = '3rd Party Mac Developer Installer';
+        // exportPlist['teamID'] = '${{ inputs.team-id }}';
         fs.writeFileSync(exportPlistPath, plist['build'](exportPlist));
 
         const iconPath = './love-actions-macos-appstore/love/platform/xcode/Images.xcassets/OS X AppIcon.appiconset/Contents.json';
@@ -256,13 +208,13 @@ runs:
     - name: Build MacOS app
       env:
         ARCHIVE_PATH: ./love-actions-macos-appstore/archive.xcarchive
-        KEYCHAIN_PATH: ./love-actions-macos-appstore/build.keychain
-        KEYCHAIN_PASSWORD: build_keychain_password
+        API_KEY_PATH: ./love-actions-macos-appstore/AuthKey_${{ inputs.api-key-id }}.p8
       shell: bash
       run: |
-        security unlock-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
-
-        xcodebuild clean archive -quiet \
+        xcodebuild clean archive -quiet -allowProvisioningUpdates \
+        -authenticationKeyPath $API_KEY_PATH \
+        -authenticationKeyID ${{ inputs.api-key-id }} \
+        -authenticationKeyIssuerID ${{ inputs.api-issuer-id }} \
         -project ./love-actions-macos-appstore/love/platform/xcode/love.xcodeproj \
         -scheme love-macosx \
         -configuration Release \
@@ -270,24 +222,29 @@ runs:
         OTHER_CFLAGS="-Wno-everything" \
         OTHER_CODE_SIGN_FLAGS="--deep --force --generate-entitlement-der --strict --timestamp --options runtime"
 
-        xcodebuild -exportArchive \
+        xcodebuild -exportArchive -allowProvisioningUpdates \
+        -authenticationKeyPath $API_KEY_PATH \
+        -authenticationKeyID ${{ inputs.api-key-id }} \
+        -authenticationKeyIssuerID ${{ inputs.api-issuer-id }} \
         -archivePath ${{ env.ARCHIVE_PATH }} \
         -exportPath ./love-actions-macos-appstore/ \
         -exportOptionsPlist ./love-actions-macos-appstore/love/platform/xcode/macosx/macos-copy-app.plist
 
-        ls -l ./love-actions-macos-appstore/
+        cp ./love-actions-macos-appstore/DistributionSummary.plist ${{ inputs.output-folder }}
+        cp ./love-actions-macos-appstore/ExportOptions.plist ${{ inputs.output-folder }}
+        cp ./love-actions-macos-appstore/Packaging.log ${{ inputs.output-folder }}
     - name: Validate installer pkg
       shell: bash
       run: |
         xcrun altool --validate-app -t macos \
-        -u "${{ inputs.account-username }}" -p "${{ inputs.account-password }}" \
+        --api-key ${{ inputs.api-key-id }} --apiIssuer ${{ inputs.api-issuer-id }} \
         -f "./love-actions-macos-appstore/${{ inputs.app-name }}.pkg"
     - name: Upload package
       shell: bash
       run: |
         xcrun altool --upload-package "./love-actions-macos-appstore/${{ inputs.app-name }}.pkg" -t "macos" --apple-id "${{ inputs.apple-id }}" \
-        -u "${{ inputs.account-username }}" -p "${{ inputs.account-password }}" --team-id "${{ inputs.team-id }}" \
-        --bundle-version "${{ steps.setup-env.outputs.bundle-version }}" --bundle-short-version-string "${{ inputs.version-string }}" --bundle-id "${{ inputs.bundle-id }}"
+        --bundle-version "${{ steps.setup-env.outputs.bundle-version }}" --bundle-short-version-string "${{ inputs.version-string }}" --bundle-id "${{ inputs.bundle-id }}" \
+        --api-key ${{ inputs.api-key-id }} --apiIssuer ${{ inputs.api-issuer-id }}
     - name: Move installer pkg
       shell: bash
       run: |
