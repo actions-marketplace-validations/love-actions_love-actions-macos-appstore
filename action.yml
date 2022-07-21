@@ -258,12 +258,12 @@ runs:
         -archivePath ${{ env.ARCHIVE_PATH }} \
         -exportPath ./love-actions-macos-appstore/ \
         -exportOptionsPlist ./love-actions-macos-appstore/love/platform/xcode/macosx/macos-copy-app.plist
-    - name: Validate installer pkg
-      shell: bash
-      run: |
-        xcrun altool --validate-app -t macos \
-        -u "${{ inputs.account-username }}" -p "${{ inputs.account-password }}" \
-        -f "./love-actions-macos-appstore/${{ inputs.app-name }}.pkg"
+    # - name: Validate installer pkg
+    #   shell: bash
+    #   run: |
+    #     xcrun altool --validate-app -t macos \
+    #     -u "${{ inputs.account-username }}" -p "${{ inputs.account-password }}" \
+    #     -f "./love-actions-macos-appstore/${{ inputs.app-name }}.pkg"
     - name: Upload package
       shell: bash
       run: |
