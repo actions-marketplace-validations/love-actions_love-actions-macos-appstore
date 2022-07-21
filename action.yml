@@ -153,6 +153,7 @@ runs:
         CERTIFICATE_PATH: ./love-actions-macos-appstore/cert.p12
         KEYCHAIN_PATH: ./love-actions-macos-appstore/build.keychain
         KEYCHAIN_PASSWORD: build_keychain_password
+        PROVISION_PROFILE_PATH: ./love-actions-macos-appstore/macos_appstore.provisionprofile
       shell: bash
       run: |
         security create-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
@@ -170,9 +171,9 @@ runs:
         
         security set-key-partition-list -S apple-tool:,apple:,codesign:,productbuild:,productsign: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
         
+        echo -n "${{ inputs.APPLE_PP_DEVELOPER_ID_APPLICATION }}" | base64 --decode --output $PROVISION_PROFILE_PATH
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-        echo -n "${{ inputs.provision-profile-base64 }}" | base64 --decode --output ~/Library/MobileDevice/Provisioning\ Profiles/macos_appstore.provisionprofile
-        ls -l ~/Library/MobileDevice/Provisioning\ Profiles/
+        cp $PROVISION_PROFILE_PATH ~/Library/MobileDevice/Provisioning\ Profiles
     - name: Modify XCode project
       shell: bash
       run: |
@@ -183,7 +184,7 @@ runs:
         const plist = require('plist');
         const xcode = require('xcode');
 
-        const provisioningProfile = fs.readFileSync('~/Library/MobileDevice/Provisioning Profiles/macos_appstore.provisionprofile', 'utf8');
+        const provisioningProfile = fs.readFileSync('./love-actions-macos-appstore/macos_appstore.provisionprofile', 'utf8');
         const uuid = provisioningProfile.substr(provisioningProfile.indexOf('>', provisioningProfile.indexOf('UUID') + 10) + 1, 36);
 
         console.log(uuid);
