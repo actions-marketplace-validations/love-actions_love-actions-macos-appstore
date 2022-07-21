@@ -157,8 +157,8 @@ runs:
         const lovePbxprojPath = './love-actions-macos-appstore/love/platform/xcode/love.xcodeproj/project.pbxproj';
         const loveProject = xcode.project(lovePbxprojPath).parseSync();
         const loveTarget = 'love-macosx'
-        loveProject.updateBuildProperty('CODE_SIGN_IDENTITY', '"Apple Development"', configuration, loveTarget);
-        loveProject.updateBuildProperty('CODE_SIGN_STYLE', '"Automatic"', configuration, loveTarget);
+        loveProject.updateBuildProperty('CODE_SIGN_IDENTITY', '"Apple Distribution"', configuration, loveTarget);
+        loveProject.updateBuildProperty('CODE_SIGN_STYLE', '"Manual"', configuration, loveTarget);
         loveProject.updateBuildProperty('DEVELOPMENT_TEAM', '${{ inputs.team-id }}', configuration, loveTarget);
         loveProject.updateBuildProperty('MACOSX_DEPLOYMENT_TARGET', '10.9', configuration, loveTarget);
         loveProject.updateBuildProperty('MARKETING_VERSION', '${{ inputs.version-string }}', configuration, loveTarget);
@@ -194,9 +194,9 @@ runs:
         const exportPlistPath = './love-actions-macos-appstore/love/platform/xcode/macosx/macos-copy-app.plist';
         const exportPlist = plist['parse'](fs.readFileSync(exportPlistPath, 'utf8'));
         exportPlist['method'] = 'app-store';
-        // exportPlist['signingCertificate'] = 'Apple Distribution';
-        // exportPlist['installerSigningCertificate'] = '3rd Party Mac Developer Installer';
-        // exportPlist['teamID'] = '${{ inputs.team-id }}';
+        exportPlist['signingCertificate'] = 'Apple Distribution';
+        exportPlist['installerSigningCertificate'] = '3rd Party Mac Developer Installer';
+        exportPlist['teamID'] = '${{ inputs.team-id }}';
         fs.writeFileSync(exportPlistPath, plist['build'](exportPlist));
 
         const iconPath = './love-actions-macos-appstore/love/platform/xcode/Images.xcassets/OS X AppIcon.appiconset/Contents.json';
@@ -241,8 +241,7 @@ runs:
     - name: Validate installer pkg
       shell: bash
       run: |
-        xcrun altool --validate-app -t "macos" \
-        -f "./love-actions-macos-appstore/${{ inputs.app-name }}.pkg" \
+        xcrun altool --validate-app -t "macos" -f "./love-actions-macos-appstore/${{ inputs.app-name }}.pkg" \
         --api-key "${{ inputs.api-key-id }}" --apiIssuer "${{ inputs.api-issuer-id }}"
     - name: Upload package
       shell: bash
