@@ -123,14 +123,14 @@ runs:
         rm -rf ./love-actions-macos-appstore/love/platform/xcode/Images.xcassets/OS\ X\ AppIcon.appiconset/*.png
         iconutil -c iconset -o ./love-actions-macos-appstore/icon.iconset ${{ inputs.icon-path }}
         mv -f ./love-actions-macos-appstore/icon.iconset/* ./love-actions-macos-appstore/love/platform/xcode/Images.xcassets/OS\ X\ AppIcon.appiconset/
-    - name: Create API key and copy to private keys
+    - name: Create API key and move to private keys
       env:
         API_KEY_PATH: ./love-actions-macos-appstore/AuthKey_${{ inputs.api-key-id }}.p8
       shell: bash
       run: |
         echo -n "${{ inputs.api-key-base64 }}" | base64 --decode --output $API_KEY_PATH
         mkdir -p ~/private_keys/
-        cp $API_KEY_PATH ~/private_keys/
+        mv $API_KEY_PATH ~/private_keys/
     - name: Modify XCode project
       shell: bash
       run: |
@@ -208,7 +208,7 @@ runs:
     - name: Build MacOS app
       env:
         ARCHIVE_PATH: ./love-actions-macos-appstore/archive.xcarchive
-        API_KEY_PATH: ./love-actions-macos-appstore/AuthKey_${{ inputs.api-key-id }}.p8
+        API_KEY_PATH: ~/private_keys/AuthKey_${{ inputs.api-key-id }}.p8
       shell: bash
       run: |
         xcodebuild clean archive -quiet -allowProvisioningUpdates \
