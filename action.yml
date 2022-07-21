@@ -109,12 +109,12 @@ runs:
   using: "composite"
   steps:
     - name: Setup environment
-      id: setup
+      id: setup-env
       shell: bash
       run: |
         mkdir -p ./love-actions-macos-appstore/
         mkdir -p ${{ inputs.output-folder }}
-        echo ::set-output name=bundle-id::${{ inputs.version-string }}.2.${{ github.run_number }}.${{ github.run_attempt }}
+        echo "::set-output name=bundle-version::${{ inputs.version-string }}.2.${{ github.run_number }}.${{ github.run_attempt }}"
     - name: Checkout love
       uses: actions/checkout@v3
       with:
@@ -202,7 +202,7 @@ runs:
         const infoPlist = plist['parse'](fs.readFileSync(infoPath, 'utf8'));
         infoPlist['CFBundleExecutable'] = '${{ inputs.product-name }}';
         infoPlist['CFBundleName'] = '${{ inputs.app-name }}';
-        infoPlist['CFBundleVersion'] = '${{ steps.setup.outputs.bundle-version }}';
+        infoPlist['CFBundleVersion'] = '${{ steps.setup-env.outputs.bundle-version }}';
         infoPlist['NSHumanReadableCopyright'] = '${{ inputs.copyright }}';
         delete infoPlist['CFBundleDocumentTypes'];
         delete infoPlist['UTExportedTypeDeclarations'];
@@ -269,7 +269,7 @@ runs:
       run: |
         xcrun altool --upload-package "./love-actions-macos-appstore/${{ inputs.app-name }}.pkg" -t "macos" --apple-id "${{ inputs.apple-id }}" \
         -u "${{ inputs.account-username }}" -p "${{ inputs.account-password }}" --team-id "${{ inputs.team-id }}" \
-        --bundle-version "${{ steps.setup.outputs.bundle-version }}" --bundle-short-version-string "${{ inputs.version-string }}" --bundle-id "${{ inputs.bundle-id }}"
+        --bundle-version "${{ steps.setup-env.outputs.bundle-version }}" --bundle-short-version-string "${{ inputs.version-string }}" --bundle-id "${{ inputs.bundle-id }}"
     - name: Move installer pkg
       shell: bash
       run: |
