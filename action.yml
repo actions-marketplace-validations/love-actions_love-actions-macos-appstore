@@ -108,11 +108,13 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Create directories
+    - name: Setup environment
+      id: setup
       shell: bash
       run: |
         mkdir -p ./love-actions-macos-appstore/
         mkdir -p ${{ inputs.output-folder }}
+        echo ::set-output name=bundle-id::${{ inputs.version-string }}.2.${{ github.run_number }}.${{ github.run_attempt }}
     - name: Checkout love
       uses: actions/checkout@v3
       with:
@@ -200,7 +202,7 @@ runs:
         const infoPlist = plist['parse'](fs.readFileSync(infoPath, 'utf8'));
         infoPlist['CFBundleExecutable'] = '${{ inputs.product-name }}';
         infoPlist['CFBundleName'] = '${{ inputs.app-name }}';
-        infoPlist['CFBundleVersion'] = '${{ inputs.version-string }}';
+        infoPlist['CFBundleVersion'] = '${{ steps.setup.outputs.bundle-version }}';
         infoPlist['NSHumanReadableCopyright'] = '${{ inputs.copyright }}';
         delete infoPlist['CFBundleDocumentTypes'];
         delete infoPlist['UTExportedTypeDeclarations'];
@@ -265,7 +267,10 @@ runs:
     - name: Upload package
       shell: bash
       run: |
-        xcrun altool --upload-package "./love-actions-macos-appstore/${{ inputs.app-name }}.pkg" -u "${{ inputs.account-username }}" -p "${{ inputs.account-password }}" --team-id "${{ inputs.team-id }}" -t macos --apple-id "${{ inputs.apple-id }}" --bundle-version "${{ inputs.version-string }}.2.${{ github.run_number }}.${{ github.run_attempt }}" --bundle-short-version-string "${{ inputs.version-string }}" --bundle-id "${{ inputs.bundle-id }}" --verbose
+        xcrun altool --upload-package "./love-actions-macos-appstore/${{ inputs.app-name }}.pkg" \
+        -u "${{ inputs.account-username }}" -p "${{ inputs.account-password }}" --team-id "${{ inputs.team-id }}" \
+        --verbose--bundle-version "${{ steps.setup.outputs.bundle-version }}" --bundle-short-version-string "${{ inputs.version-string }}" --bundle-id "${{ inputs.bundle-id }}" \
+        -t "macos" --apple-id "${{ inputs.apple-id }}" --verbose
     - name: Move installer pkg
       shell: bash
       run: |
