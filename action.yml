@@ -53,9 +53,9 @@ inputs:
       All packages would be placed here
     required: false
     default: "./build"
-  api-key-base64:
+  api-key:
     description: |
-      App Store Connect API key base64 content
+      App Store Connect API key content
       Would be used to automaticly update profiles, app IDs and certificates
     required: true
   api-key-id:
@@ -92,7 +92,7 @@ runs:
       id: asc
       uses: yuki0n0/action-appstoreconnect-token@v1.0
       with:
-        key: ${{ secrets.api-key }}
+        key: ${{ inputs.api-key }}
         key id: ${{ inputs.api-key-id }}
         issuer id: ${{ inputs.api-issuer-id }}
     - name: Display token
@@ -145,7 +145,7 @@ runs:
         API_KEY_PATH: ./love-actions-macos-appstore/AuthKey_${{ inputs.api-key-id }}.p8
       shell: bash
       run: |
-        echo -n "${{ inputs.api-key-base64 }}" | base64 --decode --output $API_KEY_PATH
+        echo -n "${{ inputs.api-key }}" > $API_KEY_PATH
         mkdir -p ~/private_keys/
         mv $API_KEY_PATH ~/private_keys/
     - name: Modify XCode project
