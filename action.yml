@@ -223,7 +223,7 @@ runs:
         -project ./love-actions-macos-appstore/love/platform/xcode/love.xcodeproj \
         -scheme love-macosx \
         -configuration Release \
-        -destination 'platform=macOS,name=Any Mac' \
+        -destination 'generic/platform=macOS' \
         -archivePath ${{ env.ARCHIVE_PATH }} \
         OTHER_CFLAGS="-Wno-everything" \
         OTHER_CODE_SIGN_FLAGS="--deep --force --generate-entitlement-der --strict --timestamp --options runtime"
