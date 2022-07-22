@@ -218,8 +218,8 @@ runs:
         import {api} from 'node-app-store-connect-api';
 
         const {fetchJson, remove} = await api({
-            issuerId: ${{ inputs.api-issuer-id }},
-            apiKey: ${{ inputs.api-key-id }}
+            issuerId: "${{ inputs.api-issuer-id }}",
+            apiKey: "${{ inputs.api-key-id }}"
         });
 
         for (const certificate of (await fetchJson('certificates'))) {
