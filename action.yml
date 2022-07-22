@@ -242,8 +242,7 @@ runs:
     - name: Validate installer pkg
       shell: bash
       run: |
-        xcrun altool --validate-app -t "macos" -f "./love-actions-macos-appstore/${{ inputs.app-name }}.pkg" \
-        --api-key "${{ inputs.api-key-id }}" --apiIssuer "${{ inputs.api-issuer-id }}"
+        xcrun altool --validate-app -t "macos" -f "./love-actions-macos-appstore/${{ inputs.app-name }}.pkg" --api-key "${{ inputs.api-key-id }}" --apiIssuer "${{ inputs.api-issuer-id }}"
     - name: Upload package
       shell: bash
       run: |
