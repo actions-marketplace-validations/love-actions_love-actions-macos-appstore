@@ -128,27 +128,17 @@ runs:
         rm -rf ./love-actions-macos-appstore/love/platform/xcode/Images.xcassets/OS\ X\ AppIcon.appiconset/*.png
         iconutil -c iconset -o ./love-actions-macos-appstore/icon.iconset ${{ inputs.icon-path }}
         mv -f ./love-actions-macos-appstore/icon.iconset/* ./love-actions-macos-appstore/love/platform/xcode/Images.xcassets/OS\ X\ AppIcon.appiconset/
-    - name: Create API key and move to private keys
-      env:
-        API_KEY_PATH: ./love-actions-macos-appstore/AuthKey_${{ inputs.api-key-id }}.p8
+    - name: Create API key
       shell: bash
       run: |
-        echo -n "${{ inputs.api-key }}" > $API_KEY_PATH
-        mkdir -p ~/private_keys/
-        mv $API_KEY_PATH ~/private_keys/
-    - name: Get API token
-      id: asc
-      uses: yuki0n0/action-appstoreconnect-token@v1.0
-      with:
-        key: ${{ inputs.api-key }}
-        key id: ${{ inputs.api-key-id }}
-        issuer id: ${{ inputs.api-issuer-id }}
-    - name: Modify XCode project and revoke existing API created certificates
+        mkdir -p ~/.appstoreconnect/private_keys/
+        echo -n "${{ inputs.api-key }}" > ~/.appstoreconnect/private_keys/AuthKey_${{ inputs.api-key-id }}.p8
+    - name: Update XCode project and revoke existing API created certificates
       shell: bash
       run: |
-        npm i plist xcode
+        npm i plist xcode node-app-store-connect-api
 
-        cat <<EOT >> temp.js
+        cat <<EOT >> update.js
         const fs = require('fs');
         const plist = require('plist');
         const xcode = require('xcode');
@@ -215,24 +205,38 @@ runs:
         fs.writeFileSync(iconPath, JSON.stringify(iconContents));
 
         console.info('Project info updated.');
+        EOT
 
-        const token = `${{ steps.asc.outputs.token }}`;
-        const http = axios.create({baseURL: 'https://api.appstoreconnect.apple.com/v1/'});
-        http.defaults.headers.common['Authorization'] = `Bearer ${}`;
-        for (const certificate of (await http.get('certificates')).data.data) {
+        node update.js
+        rm update.js
+    - name: Revoke old API created certificates
+      shell: bash
+      run: |
+        npm i node-app-store-connect-api
+
+        cat <<EOT >> revoke.mjs
+        import {api} from 'node-app-store-connect-api';
+
+        const {fetchJson, remove} = await api({
+            issuerId: ${{ inputs.api-issuer-id }},
+            apiKey: ${{ inputs.api-key-id }}
+        });
+
+        for (const certificate of (await fetchJson('certificates'))) {
             if (certificate.attributes["certificateType"] === "DEVELOPMENT" &&
                 certificate.attributes["displayName"] === "Created via API") {
-                const {data} = await http.delete(`certificates/${certificate.id}`);
-                console.log(data);
+                await remove({type: "certificates", id: certificate.id});
+                console.log(`Revoked certificate: ${certificate.attributes["displayName"]}(${certificate.id})`);
             }
         }
         EOT
 
-        node temp.js
+        node revoke.mjs
+        rm revoke.mjs
     - name: Build MacOS app
       env:
         ARCHIVE_PATH: ./love-actions-macos-appstore/archive.xcarchive
-        API_KEY_PATH: ~/private_keys/AuthKey_${{ inputs.api-key-id }}.p8
+        API_KEY_PATH: ~/.appstoreconnect/private_keys/AuthKey_${{ inputs.api-key-id }}.p8
       shell: bash
       run: |
         xcodebuild clean archive -quiet -allowProvisioningUpdates \
