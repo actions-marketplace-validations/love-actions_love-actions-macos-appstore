@@ -88,18 +88,18 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Get API token
-      id: asc
-      uses: yuki0n0/action-appstoreconnect-token@v1.0
-      with:
-        key: ${{ inputs.api-key }}
-        key id: ${{ inputs.api-key-id }}
-        issuer id: ${{ inputs.api-issuer-id }}
-    - name: Display token
-      shell: bash
-      run: |
-        echo "${{ steps.asc.outputs.token }}"
-        exit 1
+    # - name: Get API token
+    #   id: asc
+    #   uses: yuki0n0/action-appstoreconnect-token@v1.0
+    #   with:
+    #     key: ${{ inputs.api-key }}
+    #     key id: ${{ inputs.api-key-id }}
+    #     issuer id: ${{ inputs.api-issuer-id }}
+    # - name: Display token
+    #   shell: bash
+    #   run: |
+    #     echo "${{ steps.asc.outputs.token }}"
+    #     exit 1
     - name: Create directories
       shell: bash
       run: |
