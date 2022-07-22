@@ -88,18 +88,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    # - name: Get API token
-    #   id: asc
-    #   uses: yuki0n0/action-appstoreconnect-token@v1.0
-    #   with:
-    #     key: ${{ inputs.api-key }}
-    #     key id: ${{ inputs.api-key-id }}
-    #     issuer id: ${{ inputs.api-issuer-id }}
-    # - name: Display token
-    #   shell: bash
-    #   run: |
-    #     echo "${{ steps.asc.outputs.token }}"
-    #     exit 1
     - name: Create directories
       shell: bash
       run: |
@@ -148,7 +136,14 @@ runs:
         echo -n "${{ inputs.api-key }}" > $API_KEY_PATH
         mkdir -p ~/private_keys/
         mv $API_KEY_PATH ~/private_keys/
-    - name: Modify XCode project
+    - name: Get API token
+      id: asc
+      uses: yuki0n0/action-appstoreconnect-token@v1.0
+      with:
+        key: ${{ inputs.api-key }}
+        key id: ${{ inputs.api-key-id }}
+        issuer id: ${{ inputs.api-issuer-id }}
+    - name: Modify XCode project and revoke existing API created certificates
       shell: bash
       run: |
         npm i plist xcode
@@ -220,6 +215,17 @@ runs:
         fs.writeFileSync(iconPath, JSON.stringify(iconContents));
 
         console.info('Project info updated.');
+
+        const token = `${{ steps.asc.outputs.token }}`;
+        const http = axios.create({baseURL: 'https://api.appstoreconnect.apple.com/v1/'});
+        http.defaults.headers.common['Authorization'] = `Bearer ${}`;
+        for (const certificate of (await http.get('certificates')).data.data) {
+            if (certificate.attributes["certificateType"] === "DEVELOPMENT" &&
+                certificate.attributes["displayName"] === "Created via API") {
+                const {data} = await http.delete(`certificates/${certificate.id}`);
+                console.log(data);
+            }
+        }
         EOT
 
         node temp.js
