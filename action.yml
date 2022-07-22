@@ -255,11 +255,6 @@ runs:
         mv ./love-actions-macos-appstore/DistributionSummary.plist ${{ inputs.output-folder }}
         mv ./love-actions-macos-appstore/ExportOptions.plist ${{ inputs.output-folder }}
         mv ./love-actions-macos-appstore/Packaging.log ${{ inputs.output-folder }}
-    - name: Validate installer pkg
-      shell: bash
-      run: |
-        xcrun altool --validate-app -f ${{ inputs.output-folder }}/${{ inputs.product-name }}.pkg \
-        -t "macos" --apiKey "${{ inputs.api-key-id }}" --apiIssuer "${{ inputs.api-issuer-id }}"
     - name: Upload package
       shell: bash
       run: |
