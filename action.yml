@@ -158,12 +158,13 @@ runs:
         const loveProject = xcode.project(lovePbxprojPath).parseSync();
         const loveTarget = 'love-macosx'
         // loveProject.updateBuildProperty('CODE_SIGN_IDENTITY', '"Apple Distribution"', configuration, loveTarget);
-        loveProject.updateBuildProperty('CODE_SIGN_STYLE', '"Manual"', configuration, loveTarget);
+        loveProject.updateBuildProperty('CODE_SIGN_STYLE', '"Automatic"', configuration, loveTarget);
         loveProject.updateBuildProperty('DEVELOPMENT_TEAM', '${{ inputs.team-id }}', configuration, loveTarget);
         loveProject.updateBuildProperty('MACOSX_DEPLOYMENT_TARGET', '10.9', configuration, loveTarget);
         loveProject.updateBuildProperty('MARKETING_VERSION', '${{ inputs.version-string }}', configuration, loveTarget);
         loveProject.updateBuildProperty('PRODUCT_BUNDLE_IDENTIFIER', '${{ inputs.bundle-id }}', configuration, loveTarget);
         loveProject.updateBuildProperty('PRODUCT_NAME', '${{ inputs.product-name }}', configuration, loveTarget);
+        loveProject.updateBuildProperty('PROVISIONING_PROFILE', '"Automatic"', configuration, loveTarget);
         loveProject.addResourceFile(
             './game.love',
             {target: loveProject.findTargetKey('"love-macosx"')},
