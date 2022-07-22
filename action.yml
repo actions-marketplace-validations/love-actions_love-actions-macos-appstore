@@ -228,7 +228,7 @@ runs:
             if (certificate.attributes["certificateType"] === "DEVELOPMENT" &&
                 certificate.attributes["displayName"] === "Created via API") {
                 await remove({type: "certificates", id: certificate.id});
-                console.log(`Revoked certificate: ${certificate.attributes["displayName"]}(${certificate.id})`);
+                console.log('Revoked certificate: ' + certificate.attributes["displayName"] + '(' + certificate.id + ')');
             }
         }
         EOT
