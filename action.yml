@@ -158,7 +158,7 @@ runs:
         const plist = require('plist');
         const xcode = require('xcode');
 
-        const configuration = 'Release'
+        const configuration = null;
 
         const liblovePbxprojPath = './love-actions-macos-appstore/love/platform/xcode/liblove.xcodeproj/project.pbxproj';
         const libloveProject = xcode.project(liblovePbxprojPath).parseSync();
@@ -171,15 +171,16 @@ runs:
         const loveTarget = 'love-macosx'
         loveProject.updateBuildProperty('CODE_SIGN_IDENTITY', '"Apple Development"', configuration, loveTarget);
         loveProject.updateBuildProperty('CODE_SIGN_STYLE', '"Automatic"', configuration, loveTarget);
+        loveProject.updateBuildProperty('CURRENT_PROJECT_VERSION', '${{ steps.setup-env.outputs.bundle-version }}', configuration, loveTarget);
         loveProject.updateBuildProperty('DEVELOPMENT_TEAM', '${{ inputs.team-id }}', configuration, loveTarget);
         loveProject.updateBuildProperty('MACOSX_DEPLOYMENT_TARGET', '10.9', configuration, loveTarget);
         loveProject.updateBuildProperty('MARKETING_VERSION', '${{ inputs.version-string }}', configuration, loveTarget);
         loveProject.updateBuildProperty('PRODUCT_BUNDLE_IDENTIFIER', '${{ inputs.bundle-id }}', configuration, loveTarget);
         loveProject.updateBuildProperty('PRODUCT_NAME', '${{ inputs.product-name }}', configuration, loveTarget);
-        loveProject.updateBuildProperty('PROVISIONING_PROFILE', '"Automatic"', configuration, loveTarget);
+        loveProject.updateBuildProperty('PROVISIONING_PROFILE_SPECIFIER', '""', configuration, loveTarget);
         loveProject.addResourceFile(
             './game.love',
-            {target: loveProject.findTargetKey('"love-macosx"')},
+            {target: loveProject.findTargetKey(`"${loveTarget}"`)},
             loveProject.findPBXGroupKey({name: 'Resources'})
         );
         fs.writeFileSync(lovePbxprojPath, loveProject.writeSync());
@@ -188,7 +189,6 @@ runs:
         const infoPlist = plist['parse'](fs.readFileSync(infoPath, 'utf8'));
         infoPlist['CFBundleExecutable'] = '${{ inputs.product-name }}';
         infoPlist['CFBundleName'] = '${{ inputs.app-name }}';
-        infoPlist['CFBundleVersion'] = '${{ steps.setup-env.outputs.bundle-version }}';
         infoPlist['NSHumanReadableCopyright'] = '${{ inputs.copyright }}';
         delete infoPlist['CFBundleDocumentTypes'];
         delete infoPlist['UTExportedTypeDeclarations'];
@@ -207,9 +207,9 @@ runs:
         const exportPlistPath = './love-actions-macos-appstore/love/platform/xcode/macosx/macos-copy-app.plist';
         const exportPlist = plist['parse'](fs.readFileSync(exportPlistPath, 'utf8'));
         exportPlist['method'] = 'app-store';
-        exportPlist['signingCertificate'] = 'Apple Distribution';
-        exportPlist['installerSigningCertificate'] = '3rd Party Mac Developer Installer';
-        exportPlist['teamID'] = '${{ inputs.team-id }}';
+        // exportPlist['signingCertificate'] = 'Apple Distribution';
+        // exportPlist['installerSigningCertificate'] = '3rd Party Mac Developer Installer';
+        // exportPlist['teamID'] = '${{ inputs.team-id }}';
         fs.writeFileSync(exportPlistPath, plist['build'](exportPlist));
 
         const iconPath = './love-actions-macos-appstore/love/platform/xcode/Images.xcassets/OS X AppIcon.appiconset/Contents.json';
