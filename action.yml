@@ -53,6 +53,16 @@ inputs:
       All packages would be placed here
     required: false
     default: "./build"
+  apple-development-base64:
+    description: |
+      Apple Development certificate base64 content
+      Would be used to sign the app
+    required: true
+  apple-development-password:
+    description: |
+      Apple Distribution certificate password
+      Would be used to sign the app
+    required: true
   api-key:
     description: |
       App Store Connect API key content
@@ -133,6 +143,23 @@ runs:
       run: |
         mkdir -p ~/.appstoreconnect/private_keys/
         echo -n "${{ inputs.api-key }}" > ~/.appstoreconnect/private_keys/AuthKey_${{ inputs.api-key-id }}.p8
+    - name: Create keychain and import certificates
+      env:
+        CERTIFICATE_PATH: ./love-actions-macos-appstore/cert.p12
+        KEYCHAIN_PATH: ./love-actions-macos-appstore/build.keychain
+        KEYCHAIN_PASSWORD: build_keychain_password
+      shell: bash
+      run: |
+        security create-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
+        security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+        security default-keychain -s $KEYCHAIN_PATH
+        security unlock-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
+        
+        echo -n "${{ inputs.apple-development-base64 }}" | base64 --decode --output $CERTIFICATE_PATH
+        security import $CERTIFICATE_PATH -A -f pkcs12 -k $KEYCHAIN_PATH -P "${{ inputs.apple-development-password }}" -t cert
+        rm $CERTIFICATE_PATH
+        
+        security set-key-partition-list -S apple-tool:,apple:,codesign:,productbuild:,productsign: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
     - name: Update XCode project and revoke existing API created certificates
       shell: bash
       run: |
