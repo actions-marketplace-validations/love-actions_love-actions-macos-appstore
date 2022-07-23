@@ -146,8 +146,8 @@ runs:
     - name: Create keychain and import certificates
       env:
         CERTIFICATE_PATH: ./love-actions-macos-appstore/cert.p12
-        KEYCHAIN_PATH: ./love-actions-macos-appstore/build.keychain
         KEYCHAIN_PASSWORD: build_keychain_password
+        KEYCHAIN_PATH: ./love-actions-macos-appstore/build.keychain
       shell: bash
       run: |
         security create-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
@@ -235,36 +235,40 @@ runs:
 
         node update.js
         rm update.js
-    - name: Revoke old API created certificates
-      shell: bash
-      run: |
-        npm i node-app-store-connect-api
+    # - name: Revoke old API created certificates
+    #   shell: bash
+    #   run: |
+    #     npm i node-app-store-connect-api
 
-        cat <<EOT >> revoke.mjs
-        import {api} from 'node-app-store-connect-api';
+    #     cat <<EOT >> revoke.mjs
+    #     import {api} from 'node-app-store-connect-api';
 
-        const {fetchJson, remove} = await api({
-            issuerId: "${{ inputs.api-issuer-id }}",
-            apiKey: "${{ inputs.api-key-id }}"
-        });
+    #     const {fetchJson, remove} = await api({
+    #         issuerId: "${{ inputs.api-issuer-id }}",
+    #         apiKey: "${{ inputs.api-key-id }}"
+    #     });
 
-        for (const certificate of (await fetchJson('certificates'))) {
-            if (certificate.attributes["certificateType"] === "DEVELOPMENT" &&
-                certificate.attributes["displayName"] === "Created via API") {
-                await remove({type: "certificates", id: certificate.id});
-                console.log('Revoked certificate: ' + certificate.attributes["displayName"] + '(' + certificate.id + ')');
-            }
-        }
-        EOT
+    #     for (const certificate of (await fetchJson('certificates'))) {
+    #         if (certificate.attributes["certificateType"] === "DEVELOPMENT" &&
+    #             certificate.attributes["displayName"] === "Created via API") {
+    #             await remove({type: "certificates", id: certificate.id});
+    #             console.log('Revoked certificate: ' + certificate.attributes["displayName"] + '(' + certificate.id + ')');
+    #         }
+    #     }
+    #     EOT
 
-        node revoke.mjs
-        rm revoke.mjs
+    #     node revoke.mjs
+    #     rm revoke.mjs
     - name: Build MacOS app
       env:
-        ARCHIVE_PATH: ./love-actions-macos-appstore/archive.xcarchive
         API_KEY_PATH: ~/.appstoreconnect/private_keys/AuthKey_${{ inputs.api-key-id }}.p8
+        ARCHIVE_PATH: ./love-actions-macos-appstore/archive.xcarchive
+        KEYCHAIN_PASSWORD: build_keychain_password
+        KEYCHAIN_PATH: ./love-actions-macos-appstore/build.keychain
       shell: bash
       run: |
+        security unlock-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
+
         xcodebuild clean archive -quiet -allowProvisioningUpdates \
         -authenticationKeyPath $API_KEY_PATH \
         -authenticationKeyID ${{ inputs.api-key-id }} \
