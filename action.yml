@@ -160,7 +160,7 @@ runs:
         rm $CERTIFICATE_PATH
         
         security set-key-partition-list -S apple-tool:,apple:,codesign:,productbuild:,productsign: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
-    - name: Update XCode project and revoke existing API created certificates
+    - name: Update XCode project
       shell: bash
       run: |
         npm i plist xcode node-app-store-connect-api
