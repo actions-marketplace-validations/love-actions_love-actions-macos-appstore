@@ -39,6 +39,7 @@ See related actions below:
     copyright: Copyright © 2020-2022 XXX Co. All Rights Reserved.
     icon-path: ./assets/macOS/icon.icns
     love-package: ./game.love
+    libs-path: ./libs
     product-name: my_game
     version-string: 2.3.4
     output-folder: ./dist
@@ -60,6 +61,7 @@ See related actions below:
 | `copyright`                  | `false`  | `""`                 | App copyright info. Used in `platform/xcode/macosx/love-macosx.plist`                              |
 | `icon-path`                  | `false`  | `"./icon.icns"`      | `.icns` format icon's path. Used in `platform/xcode/Images.xcassets/OS X AppIcon.appiconset`       |
 | `love-package`               | `false`  | `"./game.love"`      | `.love` game package file path                                                                     |
+| `libs-path`                  | `false`  | `""`                 | Path to the libraries folder. Would copy all contents to `platform/xcode/` excluding top folder    |
 | `product-name`               | `false`  | `"love_app"`         | Base name of the package. Used to rename products                                                  |
 | `version-string`             | `false`  | `"11.4"`             | App version string no more than 3 numbers. Used in `platform/xcode/love.xcodeproj/project.pbxproj` |
 | `output-folder`              | `false`  | `"./build"`          | Built packages output folder                                                                       |
