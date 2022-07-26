@@ -167,7 +167,7 @@ runs:
       if: "${{ inputs.extra-assets != '' }}"
       shell: bash
       run: |
-        cp -r -f ${{ inputs.extra-assets }} ./love-actions-ios/love/platform/xcode/
+        cp -r -f ${{ inputs.extra-assets }} ./love-actions-macos-appstore/love/platform/xcode/
     - name: Process icons
       shell: bash
       run: |
@@ -247,7 +247,7 @@ runs:
             fs.readdirSync(libFolder).forEach(filename => {
                 fs.copyFileSync(
                     path.join(libFolder, filename),
-                    path.join('./love-actions-ios/love/platform/xcode', filename)
+                    path.join('./love-actions-macos-appstore/love/platform/xcode', filename)
                 );
                 if (path.extname(filename) === '.a') {
                     loveProject.addStaticLibrary(
