@@ -159,8 +159,8 @@ runs:
     - name: Move framework SDK and love package
       shell: bash
       run: |
-        cp -r -f ./love-actions-macos-appstore/love-apple-dependencies/macOS/Frameworks/ ./love-actions-macos-appstore/love/platform/xcode/macosx
-        cp -r -f ${{ inputs.love-package }} ./love-actions-macos-appstore/love/platform/xcode/game.love
+        mv ./love-actions-macos-appstore/love-apple-dependencies/macOS/Frameworks/ ./love-actions-macos-appstore/love/platform/xcode/macosx
+        mv ${{ inputs.love-package }} ./love-actions-macos-appstore/love/platform/xcode/game.love
         mkdir -p ./love-actions-macos-appstore/love/platform/xcode/build/Debug
         mkdir -p ./love-actions-macos-appstore/love/platform/xcode/build/Release
     - name: Copy extra assets
