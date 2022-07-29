@@ -190,11 +190,11 @@ runs:
         security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
         security default-keychain -s $KEYCHAIN_PATH
         security unlock-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
-        
+
         echo -n "${{ inputs.apple-development-base64 }}" | base64 --decode --output $CERTIFICATE_PATH
         security import $CERTIFICATE_PATH -A -f pkcs12 -k $KEYCHAIN_PATH -P "${{ inputs.apple-development-password }}" -t cert
         rm $CERTIFICATE_PATH
-        
+
         security set-key-partition-list -S apple-tool:,apple:,codesign:,productbuild:,productsign: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
     - name: Update XCode project
       shell: bash
@@ -304,7 +304,7 @@ runs:
         const freetypeInfoPlist = plist['parse'](fs.readFileSync(freetypeInfoPath, 'utf8'));
         freetypeInfoPlist['CFBundleIdentifier'] = 'org.freetype.freetype';
         fs.writeFileSync(freetypeInfoPath, plist['build'](freetypeInfoPlist));
-        
+
         const exportPlistPath = './love-actions-macos-appstore/love/platform/xcode/macosx/macos-copy-app.plist';
         const exportPlist = plist['parse'](fs.readFileSync(exportPlistPath, 'utf8'));
         exportPlist['method'] = 'app-store';
@@ -359,11 +359,15 @@ runs:
         mv ./love-actions-macos-appstore/ExportOptions.plist ${{ inputs.output-folder }}
         mv ./love-actions-macos-appstore/Packaging.log ${{ inputs.output-folder }}
     - name: Upload package
-      shell: bash
-      run: |
-        xcrun altool --upload-package ${{ inputs.output-folder }}/${{ inputs.product-name }}.pkg -t "macos" --apple-id "${{ inputs.apple-id }}" \
-        --bundle-version "${{ steps.setup-env.outputs.bundle-version }}" --bundle-short-version-string "${{ inputs.version-string }}" --bundle-id "${{ inputs.bundle-id }}" \
-        --apiKey ${{ inputs.api-key-id }} --apiIssuer ${{ inputs.api-issuer-id }} --show-progress
+      uses: nick-fields/retry@v2
+      with:
+        max_attempts: 5
+        retry_wait_seconds: 5
+        timeout_minutes: 20
+        command: |
+          xcrun altool --upload-package ${{ inputs.output-folder }}/${{ inputs.product-name }}.pkg -t "macos" --apple-id "${{ inputs.apple-id }}" \
+          --bundle-version "${{ steps.setup-env.outputs.bundle-version }}" --bundle-short-version-string "${{ inputs.version-string }}" --bundle-id "${{ inputs.bundle-id }}" \
+          --apiKey ${{ inputs.api-key-id }} --apiIssuer ${{ inputs.api-issuer-id }} --show-progress
     - name: Gather packages in output folder
       id: gather-packages
       shell: bash
