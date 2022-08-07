@@ -412,13 +412,13 @@ runs:
             }
             if (buildId === '') {
                 getCounter++;
-                console.log('Wait 10s for builds to be processed... (' + getCounter + ')');
-                await sleep(10000);
+                console.log('Wait 30s for builds to be processed... (' + getCounter + ')');
+                await sleep(30000);
             }
         } while (buildId === '');
 
         console.log('Adding app with build ID: "' + buildId + '" to external groups');
-
+        console.log(await fetchJson('buildBetaDetails/' + buildId));
         for (const betaGroup of (await fetchJson('apps/${{ inputs.apple-id }}/betaGroups'))) {
             if (!betaGroup.attributes['isInternalGroup']) {
                 let addSuccessfully = false;
