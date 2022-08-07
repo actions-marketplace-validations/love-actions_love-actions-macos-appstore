@@ -418,13 +418,13 @@ runs:
         } while (buildId === '');
 
         console.log('Adding app with build ID: "' + buildId + '" to external groups');
-        console.log(await fetchJson('buildBetaDetails/' + buildId));
         for (const betaGroup of (await fetchJson('apps/${{ inputs.apple-id }}/betaGroups'))) {
             if (!betaGroup.attributes['isInternalGroup']) {
                 let addSuccessfully = false;
                 let addCounter = 0;
                 do {
                     try {
+                        console.log((await fetchJson('buildBetaDetails/' + buildId)).attributes);
                         await postJson(
                             'betaGroups/' + betaGroup.id + '/relationships/builds',
                             {data: [{id: buildId, type: 'builds'}]},
